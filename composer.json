@@ -1,0 +1,11 @@
+{
+  "require-dev": {
+    "laravel/framework": "^5.4"
+  },
+  "autoload": {
+    "psr-4": {
+      "coossions\\": "src",
+      "coossionstest\\": "tests"
+    }
+  }
+}
