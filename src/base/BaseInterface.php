@@ -11,6 +11,6 @@ use SessionHandlerInterface;
 
 interface BaseInterface extends SessionHandlerInterface
 {
-    function encryptString(string $in, string $key, int $fmt = null);
-    function decryptString(string $in, string $key, int $fmt = null);
+    function encryptString(string $in, string $key);
+    function decryptString(string $in, string $key);
 }
