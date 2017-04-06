@@ -9,6 +9,7 @@
 namespace coossions\base;
 
 use coossions\crypt\Encryptor;
+use coossions\exceptions\CookieSizeException;
 use coossions\exceptions\OpenSSLException;
 
 class Coossions implements BaseInterface
@@ -17,30 +18,41 @@ class Coossions implements BaseInterface
 
     private $value = '';
     // encryption
-    private $cookieExpiration = null;
+    private $cookieExpTime = null;
     private $digestAlgo       = null;
     private $cipherAlgo       = null;
-    private $cipherKeylen     = null;
+    private $cipherKeylen     = 32;
+    private $cipherIvLen      = 32;
 
-    private $sidLength = 0;
+    private $sidLength         = 0;
+    private $sessionNameLength = 0;
+    private $cookieParams      = [];
+    private $digestLength      = 0;
+
+    private $isOpened = false;
 
     public function __construct()
     {
-        $this->encryptor              = new Encryptor();
-        $this->cookieExpiration = $this->encryptor->getExpire();
+        $this->encryptor        = new Encryptor();
+        $this->cookieExpTime    = $this->encryptor->getExpire();
         $this->digestAlgo       = $this->encryptor->getDigestAlgo();
         $this->cipherAlgo       = $this->encryptor->getCipherAlgo();
         $this->cipherKeylen     = $this->encryptor->getCipherKeylen();
+        $this->cipherIvLen      = openssl_cipher_iv_length($this->cipherAlgo);
     }
 
+    /**
+     * Setter for DI via Encryptor ex. if user wants to override params
+     * @param Encryptor $encryptor
+     */
     public function setEncryption(Encryptor $encryptor)
     {
-        $this->cookieExpiration = $encryptor->getExpire();
+        $this->cookieExpTime    = $encryptor->getExpire();
         $this->digestAlgo       = $encryptor->getDigestAlgo();
         $this->cipherAlgo       = $encryptor->getCipherAlgo();
         $this->cipherKeylen     = $encryptor->getCipherKeylen();
-        // if user changed cipher algo
-        $this->cipherKeylen = openssl_cipher_iv_length($encryptor->getCipherAlgo());
+        // if user changed cipher algo - re-get length
+        $this->cipherIvLen = openssl_cipher_iv_length($this->cipherAlgo);
     }
 
     /**
@@ -105,7 +117,7 @@ class Coossions implements BaseInterface
      *
      * @link  http://php.net/manual/en/sessionhandlerinterface.open.php
      *
-     * @param string $save_path  The path where to store/retrieve the session.
+     * @param string $savePath  The path where to store/retrieve the session.
      * @param string $sid The session id.
      *
      * @return bool <p>
@@ -114,10 +126,14 @@ class Coossions implements BaseInterface
      * </p>
      * @since 5.4.0
      */
-    public function open($save_path, $sid)
+    public function open($savePath, $sid)
     {
+        $this->cookieParams = session_get_cookie_params();
+        $this->digestLength = strlen(hash($this->digestAlgo, "", true));
         $this->cipherKeylen = openssl_cipher_iv_length($this->cipherAlgo);
         $this->sidLength = strlen($sid);
+        $this->sessionNameLength = strlen(session_name());
+
         return true;
     }
 
@@ -126,7 +142,7 @@ class Coossions implements BaseInterface
      *
      * @link  http://php.net/manual/en/sessionhandlerinterface.read.php
      *
-     * @param string $session_id The session id to read data for.
+     * @param string $sid The session id to read data for.
      *
      * @return string <p>
      * Returns an encoded string of the read data.
@@ -135,7 +151,7 @@ class Coossions implements BaseInterface
      * </p>
      * @since 5.4.0
      */
-    public function read($session_id)
+    public function read($sid)
     {
         return $this->value;
     }
@@ -145,24 +161,50 @@ class Coossions implements BaseInterface
      *
      * @link  http://php.net/manual/en/sessionhandlerinterface.write.php
      *
-     * @param string $session_id   The session id.
-     * @param string $session_data <p>
+     * @param string $sid The session id.
+     * @param string $sessionData <p>
      *                             The encoded session data. This data is the
      *                             result of the PHP internally encoding
      *                             the $_SESSION superglobal to a serialized
      *                             string and passing it as this parameter.
      *                             Please note sessions use an alternative serialization method.
      *                             </p>
-     *
      * @return bool <p>
      * The return value (usually TRUE on success, FALSE on failure).
      * Note this value is returned internally to PHP for processing.
      * </p>
+     * @throws CookieSizeException
+     * @throws OpenSSLException
      * @since 5.4.0
      */
-    public function write($session_id, $session_data)
+    public function write($sid, $sessionData)
     {
-        return true;
+        if($this->isOpened === false) {
+            $this->open(self::SESSION_PATH, self::SESSION_NAME);
+        }
+        $encryptedString = $this->encryptString($sessionData, $this->secret);
+
+        $digest = hash_hmac($this->digestAlgo, $sid . $encryptedString, $this->secret, true);
+        $output = base64_encode($digest . $encryptedString);
+
+        if((strlen($output) + $this->sessionNameLength +
+                strlen($sid) + self::MIN_LEN_PER_COOKIE) > self::COOKIE_SIZE
+        ) {
+            throw new CookieSizeException('The cookie size in '
+                . self::COOKIE_SIZE . ' was exceeded.');
+        }
+
+        $isSet = setcookie($sid,
+            $output,
+            ($this->cookieParams["lifetime"] > 0) ? time() + $this->cookieParams["lifetime"] : 0,
+            $this->cookieParams["path"],
+            $this->cookieParams["domain"],
+            $this->cookieParams["secure"],
+            $this->cookieParams["httponly"]
+        );
+        // ensure session is closed after data has been written
+        session_write_close();
+        return $isSet;
     }
 
     /**
@@ -177,17 +219,17 @@ class Coossions implements BaseInterface
     public function encryptString(string $in, string $key)
     {
         // Build an initialisation vector
-        $iv = mcrypt_create_iv($this->cipherKeylen, MCRYPT_DEV_URANDOM);
+        $iv = random_bytes($this->cipherKeylen);
         // Hash the key
         $keyhash = openssl_digest($key, $this->digestAlgo, true);
         // and encrypt
         $opts      = OPENSSL_RAW_DATA;
         $encrypted = openssl_encrypt($in, $this->cipherAlgo, $keyhash, $opts, $iv);
         if ($encrypted === false) {
-            throw new OpenSSLException('Cryptor::encryptString() - Encryption failed: ' . openssl_error_string());
+            throw new OpenSSLException('encryptString() - Encryption failed: ' . openssl_error_string());
         }
         // The result comprises the IV and encrypted data
-        $res = $iv . $encrypted;
+        $res = pack(self::PACK_CODE, time() + $this->cookieExpTime) . $iv . $encrypted;
 
         return base64_encode($res);
     }
@@ -209,8 +251,7 @@ class Coossions implements BaseInterface
         // and do an integrity check on the size.
         if (strlen($raw) < $this->cipherKeylen) {
             throw new OpenSSLException(
-                'Cryptor::decryptString() - ' .
-                'data length ' . strlen($raw) . " is less than iv length {$this->cipherKeylen}"
+                'decryptString() - data length ' . strlen($raw) . ' is less than iv length ' . $this->cipherKeylen
             );
         }
         // Extract the initialisation vector and encrypted data

@@ -21,7 +21,8 @@ class CoossionsHandler extends Coossions implements CoossionsContractInterface
      */
     public function startSession(bool $start = true)
     {
-        session_set_save_handler($this, true);
+        session_set_save_handler($this);
+        session_register_shutdown();
         if(true === $start) {
             session_start();
         }

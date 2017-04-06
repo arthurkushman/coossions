@@ -21,6 +21,14 @@ class CoossionsServiceProvider extends ServiceProvider
 {
     protected $defer = true;
 
+    protected $secret = '';
+
+    public function __construct(\Illuminate\Foundation\Application $app, $secret)
+    {
+        $this->secret = $secret;
+        parent::__construct($app);
+    }
+
     /**
      * Register the application services.
      *
@@ -29,7 +37,7 @@ class CoossionsServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->bind('coossions\base\CoossionsContractInterface', function() {
-            return new CoossionsHandler();
+            return new CoossionsHandler($this->secret);
         });
     }
 

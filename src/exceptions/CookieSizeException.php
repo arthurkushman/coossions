@@ -2,7 +2,7 @@
 
 namespace coossions\exceptions;
 
-class OpenSSLException extends \Exception
+class CookieSizeException extends \Exception
 {
     public function __construct($message)
     {

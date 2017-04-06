@@ -1,2 +1,2 @@
 # coossions
-Coossions is a php plugin to store sessions in encrypted cookies
+Coossions is a php plugin to store sessions in encrypted cookie
