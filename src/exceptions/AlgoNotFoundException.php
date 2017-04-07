@@ -2,7 +2,7 @@
 
 namespace coossions\exceptions;
 
-class EncryptionAlgoNotFoundException extends \Exception
+class AlgoNotFoundException extends \Exception
 {
     public function __construct($message, $code, \Exception $previous)
     {
