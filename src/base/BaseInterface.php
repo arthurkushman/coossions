@@ -23,7 +23,7 @@ interface BaseInterface extends SessionHandlerInterface
      * @param string $sid
      * @return string The encrypted string.
      */
-    function encryptString(string $in, string $key, string $sid);
+    function encryptString(string $in, string $key, string $sid): string;
 
     /**
      * Decrypt a string.
@@ -35,5 +35,5 @@ interface BaseInterface extends SessionHandlerInterface
      *
      * @return string The decrypted string.
      */
-    function decryptString(string $in, string $key, string $sid);
+    function decryptString(string $in, string $key, string $sid): string;
 }

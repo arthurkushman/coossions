@@ -70,7 +70,7 @@ class Coossions extends Encryptor implements BaseInterface
      *        </p>
      * @since 5.4.0
      */
-    public function close()
+    public function close(): bool
     {
         return true;
     }
@@ -88,7 +88,7 @@ class Coossions extends Encryptor implements BaseInterface
      * </p>
      * @since 5.4.0
      */
-    public function destroy($sid)
+    public function destroy($sid): bool
     {
         setcookie($sid, '', time() - 3600); // erase cookie in path that they were set in
         setcookie($sid, '', time() - 3600, '/'); // erase cookie for current domain
@@ -112,7 +112,7 @@ class Coossions extends Encryptor implements BaseInterface
      * </p>
      * @since 5.4.0
      */
-    public function gc($maxlifetime)
+    public function gc($maxlifetime): bool
     {
         return true;
     }
@@ -131,7 +131,7 @@ class Coossions extends Encryptor implements BaseInterface
      * </p>
      * @since 5.4.0
      */
-    public function open($savePath, $sid)
+    public function open($savePath, $sid): bool
     {
         $this->cookieParams      = session_get_cookie_params();
         $this->digestLength      = strlen(hash($this->digestAlgo, '', true));
@@ -156,7 +156,7 @@ class Coossions extends Encryptor implements BaseInterface
      * </p>
      * @since 5.4.0
      */
-    public function read($sid)
+    public function read($sid): string
     {
         if ($this->isOpened === false) {
             $this->open(self::SESSION_PATH, self::SESSION_NAME);
@@ -190,7 +190,7 @@ class Coossions extends Encryptor implements BaseInterface
      * @throws OpenSSLException
      * @since 5.4.0
      */
-    public function write($sid, $sessionData)
+    public function write($sid, $sessionData): bool
     {
         if ($this->isOpened === false) {
             $this->open(self::SESSION_PATH, self::SESSION_NAME);

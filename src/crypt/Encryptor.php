@@ -24,7 +24,7 @@ class Encryptor implements EncryptorInterface
         $this->secret = $secret;
     }
 
-    private function hashesEqual(string $digest, string $message, string $sid)
+    private function hashesEqual(string $digest, string $message, string $sid): bool
     {
         return hash_equals(
             hash_hmac($this->digestAlgo, $sid . $message, $this->secret, true),
@@ -42,7 +42,7 @@ class Encryptor implements EncryptorInterface
      * @return string The encrypted string.
      * @throws OpenSSLException
      */
-    public function encryptString(string $in, string $key, string $sid)
+    public function encryptString(string $in, string $key, string $sid): string
     {
         // Build an initialisation vector
         $iv = random_bytes($this->cipherIvLen);
@@ -70,7 +70,7 @@ class Encryptor implements EncryptorInterface
      * @return string The decrypted string.
      * @throws OpenSSLException
      */
-    public function decryptString(string $in, string $key, string $sid)
+    public function decryptString(string $in, string $key, string $sid): string
     {
         $raw = base64_decode($in);
 
@@ -117,7 +117,7 @@ class Encryptor implements EncryptorInterface
     /**
      * @return int
      */
-    public function getExpire()
+    public function getExpire(): int
     {
         return $this->expire;
     }
@@ -133,7 +133,7 @@ class Encryptor implements EncryptorInterface
     /**
      * @return string
      */
-    public function getDigestAlgo()
+    public function getDigestAlgo(): string
     {
         return $this->digestAlgo;
     }
@@ -149,7 +149,7 @@ class Encryptor implements EncryptorInterface
     /**
      * @return string
      */
-    public function getCipherAlgo()
+    public function getCipherAlgo(): string
     {
         return $this->cipherAlgo;
     }
@@ -165,7 +165,7 @@ class Encryptor implements EncryptorInterface
     /**
      * @return int
      */
-    public function getCipherIvLen()
+    public function getCipherIvLen(): int
     {
         return $this->cipherIvLen;
     }
