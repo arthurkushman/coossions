@@ -15,6 +15,11 @@ class Encryptor implements EncryptorInterface
     protected $cipherIvLen  = 32; // aes-256-ctr length
     protected $digestLength = 64; // sha256 length
 
+    public function __construct(string $secret)
+    {
+        $this->secret = $secret;
+    }
+
     private function hashesEqual(string $digest, string $message, string $sid)
     {
         return hash_equals(

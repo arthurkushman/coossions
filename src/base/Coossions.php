@@ -9,13 +9,12 @@
 namespace coossions\base;
 
 use coossions\crypt\Encryptor;
+use coossions\exceptions\AlgoNotFoundException;
 use coossions\exceptions\CookieSizeException;
 use coossions\exceptions\OpenSSLException;
 
 class Coossions extends Encryptor implements BaseInterface
 {
-    private $encryptor = null;
-
     private $sidLength         = 0;
     private $sessionNameLength = 0;
     private $cookieParams      = [];
@@ -24,11 +23,10 @@ class Coossions extends Encryptor implements BaseInterface
 
     public function __construct(string $secret)
     {
-        $this->secret        = $secret;
-        $this->encryptor     = new Encryptor();
-        $this->expire        = $this->encryptor->getExpire();
-        $this->digestAlgo    = $this->encryptor->getDigestAlgo();
-        $this->cipherAlgo    = $this->encryptor->getCipherAlgo();
+        parent::__construct($secret);
+        $this->expire        = $this->getExpire();
+        $this->digestAlgo    = $this->getDigestAlgo();
+        $this->cipherAlgo    = $this->getCipherAlgo();
         $this->cipherIvLen   = openssl_cipher_iv_length($this->cipherAlgo);
     }
 
@@ -36,12 +34,24 @@ class Coossions extends Encryptor implements BaseInterface
      * Setter for DI via Encryptor ex. if user wants to override params
      *
      * @param Encryptor $encryptor
+     * @throws AlgoNotFoundException
      */
     public function setEncryption(Encryptor $encryptor)
     {
         $this->expire = $encryptor->getExpire();
         $this->digestAlgo    = $encryptor->getDigestAlgo();
         $this->cipherAlgo    = $encryptor->getCipherAlgo();
+        // check if there are cipher and digest algos exist
+        $cipherMethods = openssl_get_cipher_methods();
+        $digestMethods = openssl_get_md_methods();
+        if (in_array($this->digestAlgo, $digestMethods) === false)
+        {
+            throw new AlgoNotFoundException('Digest algorithm ' . $this->digestAlgo . ' not found');
+        }
+        if (in_array($this->cipherAlgo, $cipherMethods) === true)
+        {
+            throw new AlgoNotFoundException('Cipher algorithm ' . $this->cipherAlgo . ' not found');
+        }
         // if user changed cipher algo - re-get length
         $this->cipherIvLen = openssl_cipher_iv_length($this->cipherAlgo);
     }
@@ -187,8 +197,8 @@ class Coossions extends Encryptor implements BaseInterface
              strlen($sid) + self::MIN_LEN_PER_COOKIE) > self::COOKIE_SIZE
         ) {
             throw new CookieSizeException(
-                'The cookie size in '
-                . self::COOKIE_SIZE . ' was exceeded.'
+                'The cookie size of '
+                . self::COOKIE_SIZE . ' bytes was exceeded.'
             );
         }
 
