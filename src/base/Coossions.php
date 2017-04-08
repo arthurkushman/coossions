@@ -21,6 +21,10 @@ class Coossions extends Encryptor implements BaseInterface
 
     private $isOpened = false;
 
+    /**
+     * Coossions constructor.
+     * @param string $secret the secret key to be used in openssl_digest
+     */
     public function __construct(string $secret)
     {
         parent::__construct($secret);
@@ -135,7 +139,7 @@ class Coossions extends Encryptor implements BaseInterface
         $this->sidLength         = strlen($sid);
         $this->sessionNameLength = strlen(session_name());
 
-        return true;
+        return $this->isOpened = true;
     }
 
     /**
@@ -194,7 +198,7 @@ class Coossions extends Encryptor implements BaseInterface
         $output = $this->encryptString($sessionData, $this->secret, $sid);
 
         if ((strlen($output) + $this->sessionNameLength +
-             strlen($sid) + self::MIN_LEN_PER_COOKIE) > self::COOKIE_SIZE
+                $this->sidLength + self::MIN_LEN_PER_COOKIE) > self::COOKIE_SIZE
         ) {
             throw new CookieSizeException(
                 'The cookie size of '
@@ -211,8 +215,6 @@ class Coossions extends Encryptor implements BaseInterface
             $this->cookieParams["secure"],
             $this->cookieParams["httponly"]
         );
-        // ensure session is closed after data has been written
-        session_write_close();
 
         return $isSet;
     }

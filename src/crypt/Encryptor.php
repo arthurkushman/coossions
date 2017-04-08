@@ -15,6 +15,10 @@ class Encryptor implements EncryptorInterface
     protected $cipherIvLen  = 32; // aes-256-ctr length
     protected $digestLength = 64; // sha256 length
 
+    /**
+     * Encryptor constructor.
+     * @param string $secret the secret key to be used in openssl_digest
+     */
     public function __construct(string $secret)
     {
         $this->secret = $secret;
@@ -49,10 +53,9 @@ class Encryptor implements EncryptorInterface
             throw new OpenSSLException('encryptString() - Encryption failed: ' . openssl_error_string());
         }
         // The result comprises the IV and encrypted data
-        $res = pack(self::PACK_CODE, time() + $this->expire) . $iv . $encrypted;
-
-        $msg = base64_encode($res);
+        $msg = $iv . $encrypted;
         $digest = hash_hmac($this->digestAlgo, $sid . $msg, $this->secret, true);
+
         return base64_encode($digest . $msg);
     }
 
@@ -71,7 +74,6 @@ class Encryptor implements EncryptorInterface
     {
         $raw = base64_decode($in);
 
-        // and do an integrity check on the size.
         if (strlen($raw) < $this->cipherIvLen) {
             throw new OpenSSLException(
                 'decryptString() - data length ' . strlen($raw) . ' is less than iv length ' . $this->cipherIvLen
@@ -91,20 +93,12 @@ class Encryptor implements EncryptorInterface
             return '';
         }
 
-        $validTill = substr($msg, 0, self::META_DATA_SIZE);
-        $exp       = unpack(self::PACK_CODE, $validTill)[1];
-        if (time() > $exp) {
-            return '';
-        }
-
-        // 2nd base64_decode for message pack(self::PACK_CODE, time() + $this->cookieExpTime) . $iv . $encrypted
-        $msg = base64_decode($msg);
         // Extract the initialisation vector and encrypted data
         $iv  = substr($msg, 0, $this->cipherIvLen);
         $raw = substr($msg, $this->cipherIvLen);
         // Hash the key
         $keyHash = openssl_digest($key, $this->digestAlgo, true);
-        $res     = openssl_decrypt($raw, $this->digestAlgo, $keyHash, OPENSSL_RAW_DATA, $iv);
+        $res     = openssl_decrypt($raw, $this->cipherAlgo, $keyHash, OPENSSL_RAW_DATA, $iv);
         if (false === $res) {
             throw new OpenSSLException('decryptString - decryption failed: ' . openssl_error_string());
         }

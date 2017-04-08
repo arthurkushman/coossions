@@ -13,7 +13,10 @@ use coossions\base\CoossionsContractInterface;
 
 class CoossionsHandler extends Coossions implements CoossionsContractInterface
 {
-    
+    /**
+     * Coossions constructor.
+     * @param string $secret the secret key to be used in openssl_digest
+     */
     public function __construct(string $secret)
     {
         parent::__construct($secret);
@@ -27,7 +30,6 @@ class CoossionsHandler extends Coossions implements CoossionsContractInterface
     public function startSession(bool $start = true)
     {
         session_set_save_handler($this);
-        session_register_shutdown();
         if(true === $start) {
             session_start();
         }
