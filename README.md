@@ -36,9 +36,9 @@ which will then checked by hash_equals to additionally identify non-fraudulent d
 
 To create reliable/secure cryptographic signature, it would be better if `your_digest_secrete` will be in both upper/lower case letters and mashed with digits + long enough.  
 
-## Setting custom hash and cryptographic algorithms
+## Setting custom hash and cryptographic algorithms through DI
 
-Although, there are set the best known, at the moment, hash and crypto algos - You can set Your preferable ones:
+Although, there are already set the best known, at the moment, hash and crypto algos - You can set Your preferable ones:
 
 ```php
         $coossions = new CoossionsHandler('your_digest_secrete');
