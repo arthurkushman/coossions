@@ -13,6 +13,11 @@ use coossions\base\CoossionsContractInterface;
 
 class CoossionsHandler extends Coossions implements CoossionsContractInterface
 {
+    
+    public function __construct(string $secret)
+    {
+        parent::__construct($secret);
+    }
 
     /**
      * Starts session with SessionHandlerInterface impl + cookie encryption

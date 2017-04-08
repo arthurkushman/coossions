@@ -36,8 +36,8 @@ class CoossionsServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->bind('coossions\base\CoossionsContractInterface', function() {
-            return new CoossionsHandler($this->secret);
+        $this->app->bind('coossions\base\CoossionsContractInterface', function($app, $secret) {
+            return new CoossionsHandler($secret);
         });
     }
 

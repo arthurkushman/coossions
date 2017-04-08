@@ -14,11 +14,6 @@ interface BaseInterface extends SessionHandlerInterface
     const SESSION_NAME = 'PHPSESSID';
     const SESSION_PATH = '';
 
-    const MIN_LEN_PER_COOKIE = 6;
-    const COOKIE_SIZE        = 4096;
-    const PACK_CODE          = 'V';
-    const META_DATA_SIZE     = 4;
-
     /**
      * Encrypt a string.
      *
