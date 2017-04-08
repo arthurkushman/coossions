@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: arthur
- * Date: 05.04.17
- * Time: 20:10
- */
-
 namespace coossions;
 
 use coossions\base\Coossions;

@@ -1,5 +1,4 @@
 <?php
-
 namespace coossions\crypt;
 
 use coossions\exceptions\OpenSSLException;

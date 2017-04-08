@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: arthur
- * Date: 05.04.17
- * Time: 20:16
- */
-
 namespace coossions\base;
 
 use coossions\crypt\Encryptor;

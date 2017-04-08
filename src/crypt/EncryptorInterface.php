@@ -1,13 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: arthur
- * Date: 08.04.17
- * Time: 11:32
- */
-
 namespace coossions\crypt;
-
 
 use coossions\exceptions\OpenSSLException;
 
