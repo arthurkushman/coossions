@@ -12,32 +12,22 @@ use coossions\crypt\Encryptor;
 use coossions\exceptions\CookieSizeException;
 use coossions\exceptions\OpenSSLException;
 
-class Coossions implements BaseInterface
+class Coossions extends Encryptor implements BaseInterface
 {
     private $encryptor = null;
-
-    private $value = '';
-    // encryption
-    private $cookieExpTime = null;
-    private $digestAlgo    = null;
-    private $cipherAlgo    = null;
-    private $cipherKeylen  = 32;
-    private $cipherIvLen   = 32;
 
     private $sidLength         = 0;
     private $sessionNameLength = 0;
     private $cookieParams      = [];
-    private $digestLength      = 0;
 
     private $isOpened = false;
 
     public function __construct()
     {
         $this->encryptor     = new Encryptor();
-        $this->cookieExpTime = $this->encryptor->getExpire();
+        $this->expire = $this->encryptor->getExpire();
         $this->digestAlgo    = $this->encryptor->getDigestAlgo();
         $this->cipherAlgo    = $this->encryptor->getCipherAlgo();
-        $this->cipherKeylen  = $this->encryptor->getCipherKeylen();
         $this->cipherIvLen   = openssl_cipher_iv_length($this->cipherAlgo);
     }
 
@@ -48,10 +38,9 @@ class Coossions implements BaseInterface
      */
     public function setEncryption(Encryptor $encryptor)
     {
-        $this->cookieExpTime = $encryptor->getExpire();
+        $this->expire = $encryptor->getExpire();
         $this->digestAlgo    = $encryptor->getDigestAlgo();
         $this->cipherAlgo    = $encryptor->getCipherAlgo();
-        $this->cipherKeylen  = $encryptor->getCipherKeylen();
         // if user changed cipher algo - re-get length
         $this->cipherIvLen = openssl_cipher_iv_length($this->cipherAlgo);
     }
@@ -131,7 +120,7 @@ class Coossions implements BaseInterface
     {
         $this->cookieParams      = session_get_cookie_params();
         $this->digestLength      = strlen(hash($this->digestAlgo, '', true));
-        $this->cipherKeylen      = openssl_cipher_iv_length($this->cipherAlgo);
+        $this->cipherIvLen       = openssl_cipher_iv_length($this->cipherAlgo);
         $this->sidLength         = strlen($sid);
         $this->sessionNameLength = strlen(session_name());
 
@@ -160,9 +149,8 @@ class Coossions implements BaseInterface
         if (isset($_COOKIE[$sid]) === false) {
             return '';
         }
-        $this->decryptString($_COOKIE[$sid], $this->secret, $sid);
 
-        return $this->value;
+        return $this->decryptString($_COOKIE[$sid], $this->secret, $sid);
     }
 
     /**
@@ -192,10 +180,7 @@ class Coossions implements BaseInterface
         if ($this->isOpened === false) {
             $this->open(self::SESSION_PATH, self::SESSION_NAME);
         }
-        $encryptedString = $this->encryptString($sessionData, $this->secret);
-
-        $digest = hash_hmac($this->digestAlgo, $sid . $encryptedString, $this->secret, true);
-        $output = base64_encode($digest . $encryptedString);
+        $output = $this->encryptString($sessionData, $this->secret, $sid);
 
         if ((strlen($output) + $this->sessionNameLength +
              strlen($sid) + self::MIN_LEN_PER_COOKIE) > self::COOKIE_SIZE
@@ -232,26 +217,29 @@ class Coossions implements BaseInterface
     /**
      * Encrypt a string.
      *
-     * @param  string $in  String to encrypt.
+     * @param  string $in String to encrypt.
      * @param  string $key Encryption key.
      *
+     * @param string $sid
      * @return string The encrypted string.
-     * @throws \Exception
+     * @throws OpenSSLException
      */
-    public function encryptString(string $in, string $key)
+    public function encryptString(string $in, string $key, string $sid)
     {
         // Build an initialisation vector
         $iv = random_bytes($this->cipherIvLen);
         // Hash the key
         $keyHash   = openssl_digest($key, $this->digestAlgo, true);
         $encrypted = openssl_encrypt($in, $this->cipherAlgo, $keyHash, OPENSSL_RAW_DATA, $iv);
-        if ($encrypted === false) {
+        if (false === $encrypted) {
             throw new OpenSSLException('encryptString() - Encryption failed: ' . openssl_error_string());
         }
         // The result comprises the IV and encrypted data
-        $res = pack(self::PACK_CODE, time() + $this->cookieExpTime) . $iv . $encrypted;
+        $res = pack(self::PACK_CODE, time() + $this->expire) . $iv . $encrypted;
 
-        return base64_encode($res);
+        $msg = base64_encode($res);
+        $digest = hash_hmac($this->digestAlgo, $sid . $msg, $this->secret, true);
+        return base64_encode($digest . $msg);
     }
 
     /**
@@ -272,38 +260,38 @@ class Coossions implements BaseInterface
         // and do an integrity check on the size.
         if (strlen($raw) < $this->cipherIvLen) {
             throw new OpenSSLException(
-                'decryptString() - data length ' . strlen($raw) . ' is less than iv length ' . $this->cipherKeylen
+                'decryptString() - data length ' . strlen($raw) . ' is less than iv length ' . $this->cipherIvLen
             );
         }
 
         $digest = substr($raw, 0, $this->digestLength);
-        if ($digest === false) {
+        if (false === $digest) {
             return '';
         }
-        $message = substr($raw, $this->digestLength);
-        if ($message === false) {
-            return '';
-        }
-
-        if ($this->hashesEqual($digest, $message, $sid) === false) {
+        $msg = substr($raw, $this->digestLength);
+        if (false === $msg) {
             return '';
         }
 
-        $validTill = substr($message, 0, self::META_DATA_SIZE);
+        if ($this->hashesEqual($digest, $msg, $sid) === false) {
+            return '';
+        }
+
+        $validTill = substr($msg, 0, self::META_DATA_SIZE);
         $exp       = unpack(self::PACK_CODE, $validTill)[1];
         if (time() > $exp) {
             return '';
         }
 
         // 2nd base64_decode for message pack(self::PACK_CODE, time() + $this->cookieExpTime) . $iv . $encrypted
-        $message = base64_decode($message);
+        $msg = base64_decode($msg);
         // Extract the initialisation vector and encrypted data
-        $iv  = substr($message, 0, $this->cipherIvLen);
-        $raw = substr($message, $this->cipherIvLen);
+        $iv  = substr($msg, 0, $this->cipherIvLen);
+        $raw = substr($msg, $this->cipherIvLen);
         // Hash the key
         $keyHash = openssl_digest($key, $this->digestAlgo, true);
         $res     = openssl_decrypt($raw, $this->digestAlgo, $keyHash, OPENSSL_RAW_DATA, $iv);
-        if ($res === false) {
+        if (false === $res) {
             throw new OpenSSLException('decryptString - decryption failed: ' . openssl_error_string());
         }
 

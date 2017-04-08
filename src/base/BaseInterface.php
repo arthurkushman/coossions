@@ -22,13 +22,13 @@ interface BaseInterface extends SessionHandlerInterface
     /**
      * Encrypt a string.
      *
-     * @param  string $in  String to encrypt.
+     * @param  string $in String to encrypt.
      * @param  string $key Encryption key.
      *
+     * @param string $sid
      * @return string The encrypted string.
-     * @throws \Exception
      */
-    function encryptString(string $in, string $key);
+    function encryptString(string $in, string $key, string $sid);
 
     /**
      * Decrypt a string.

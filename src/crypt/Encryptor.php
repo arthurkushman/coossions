@@ -4,11 +4,11 @@ namespace coossions\crypt;
 
 class Encryptor
 {
-    private $expire = 2592000; // 30 days
-    private $digestAlgo = 'sha256';
-    private $cipherAlgo = 'aes-256-ctr';
-    private $cipherKeylen = 32;
-
+    protected $expire       = 2592000; // 30 days
+    protected $digestAlgo   = 'sha256';
+    protected $cipherAlgo   = 'aes-256-ctr';
+    protected $cipherIvLen  = 64; // sha256 length
+    protected $digestLength = 0;
     /**
      * @param int $expire
      */
@@ -58,19 +58,19 @@ class Encryptor
     }
 
     /**
-     * @param int $cipherKeylen
+     * @param int $cipherIvLen
      */
-    public function setCipherKeylen($cipherKeylen)
+    public function setCipherIvLen($cipherIvLen)
     {
-        $this->cipherKeylen = $cipherKeylen;
+        $this->cipherIvLen = $cipherIvLen;
     }
 
     /**
      * @return int
      */
-    public function getCipherKeylen()
+    public function getCipherIvLen()
     {
-        return $this->cipherKeylen;
+        return $this->cipherIvLen;
     }
-
+    
 }
