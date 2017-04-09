@@ -48,17 +48,16 @@ Although, there are already set the best known, at the moment, hash and crypto a
         $coossions = new CoossionsHandler('your_digest_secrete');
         
         $encryptor = new Encryptor('your_digest_secrete');
-        $encryptor->setDigestAlgo('sha512');
-        $encryptor->setCipherAlgo('aes-256-cfb');
+        $encryptor->setDigestAlgo('sha512'); // defaults to sha256
+        $encryptor->setCipherAlgo('aes-128-ctr'); // defaults to aes-256-ctr
         $coossions->setEncryption($encryptor);
         
         $coossions->startSession();        
 ```
 
-
 ## Performance 
 
-Tested the performance of write/read 2 $_SESSION vars (3 symbols long int/string): 
+Tested performance of write/read 2 $_SESSION vars (3 symbols long int/string): 
  
-- write overage time 6-8 microseconds
-- read overage time 5-7 microseconds 
+- write avg time 6-8 microseconds
+- read avg time 5-7 microseconds 
