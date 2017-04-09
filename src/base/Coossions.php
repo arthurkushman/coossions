@@ -45,7 +45,8 @@ class Coossions extends Encryptor implements BaseInterface
         {
             throw new AlgoNotFoundException('Digest algorithm ' . $this->digestAlgo . ' not found');
         }
-        if (in_array($this->cipherAlgo, $cipherMethods) === true)
+
+        if (in_array($this->cipherAlgo, $cipherMethods) === false)
         {
             throw new AlgoNotFoundException('Cipher algorithm ' . $this->cipherAlgo . ' not found');
         }

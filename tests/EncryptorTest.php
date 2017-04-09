@@ -38,7 +38,7 @@ final class EncryptorTest extends TestCase
 
     public function testSetGetCipherAlgo()
     {
-        $aes128 = 'aes-128-ctr';
+        $aes128 = 'aes-512-ctr';
         $this->encryptor->setCipherAlgo($aes128);
         $this->assertEquals($aes128, $this->encryptor->getCipherAlgo());
     }

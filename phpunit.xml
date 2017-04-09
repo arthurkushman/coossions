@@ -1,5 +1,8 @@
 <phpunit bootstrap="./tests/_bootstrap.php" colors="true">
     <testsuites>
+        <testsuite name="Coossions">
+            <directory suffix="Test.php" phpVersion="7.0" phpVersionOperator=">=">./tests/</directory>
+        </testsuite>
         <testsuite name="Encryptor">
             <directory suffix="Test.php" phpVersion="7.0" phpVersionOperator=">=">./tests/</directory>
         </testsuite>
