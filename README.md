@@ -1,6 +1,7 @@
 # coossions
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/arthurkushman/coossions/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/arthurkushman/coossions/?branch=master)
 [![Build Status](https://scrutinizer-ci.com/g/arthurkushman/coossions/badges/build.png?b=master)](https://scrutinizer-ci.com/g/arthurkushman/coossions/build-status/master)
+[![Code Coverage](https://scrutinizer-ci.com/g/arthurkushman/coossions/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/arthurkushman/coossions/?branch=master)
 [![MIT Licence](https://badges.frapsoft.com/os/mit/mit.svg?v=103)](https://opensource.org/licenses/mit-license.php)
 
 Coossions (stands for cookie-sessions) is a php plugin to store sessions in encrypted cookie
