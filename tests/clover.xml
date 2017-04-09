@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1491755429">
-  <project timestamp="1491755429">
+<coverage generated="1491756246">
+  <project timestamp="1491756246">
     <package name="coossions">
       <file name="/srv/coossions/src/CoossionsHandler.php">
         <class name="CoossionsHandler" namespace="coossions">

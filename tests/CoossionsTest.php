@@ -2,6 +2,7 @@
 namespace coossionstest;
 
 use coossions\base\Coossions;
+use coossions\CoossionsHandler;
 use coossions\crypt\Encryptor;
 use PHPUnit\Framework\TestCase;
 
@@ -20,8 +21,8 @@ final class CoossionsTest extends TestCase
 
     public function setUp()
     {
-        $this->coossions = new Coossions('secret');
-        $this->encryptor = new Encryptor('secret');
+        $this->coossions = new Coossions($this->secret);
+        $this->encryptor = new Encryptor($this->secret);
         $this->sid = md5($this->sid);
     }
 
@@ -53,7 +54,10 @@ final class CoossionsTest extends TestCase
 
 //    public function testCoossionsHandler()
 //    {
-//
+//        $coossions = new CoossionsHandler($this->secret); // any secret word
+//        $coossions->startSession();
+//        // testing that session_starts normally and have defined an empty global array
+//        $this->assertArraySubset([], $_SESSION);
 //    }
 
 //    public function testExceptions()
