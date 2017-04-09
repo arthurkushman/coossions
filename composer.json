@@ -5,7 +5,7 @@
     "php": ">=7.0"
   },
   "require-dev": {
-    "laravel/framework": ">=5.4"
+    "phpunit/phpunit": ">=5.4"
   },
   "autoload": {
     "psr-4": {

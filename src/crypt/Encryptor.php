@@ -11,8 +11,8 @@ class Encryptor implements EncryptorInterface
     protected $expire       = 2592000; // 30 days
     protected $digestAlgo   = 'sha256';
     protected $cipherAlgo   = 'aes-256-ctr';
-    protected $cipherIvLen  = 32; // aes-256-ctr length
-    protected $digestLength = 64; // sha256 length
+    protected $cipherIvLen  = 16; // aes-256-ctr length
+    protected $digestLength = 32; // sha256 length for raw-data
 
     /**
      * Encryptor constructor.
