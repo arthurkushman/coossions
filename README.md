@@ -1,5 +1,9 @@
 # coossions
-Coossions is a php plugin to store sessions in encrypted cookie
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/arthurkushman/coossions/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/arthurkushman/coossions/?branch=master)
+[![Build Status](https://scrutinizer-ci.com/g/arthurkushman/coossions/badges/build.png?b=master)](https://scrutinizer-ci.com/g/arthurkushman/coossions/build-status/master)
+[![MIT Licence](https://badges.frapsoft.com/os/mit/mit.svg?v=103)](https://opensource.org/licenses/mit-license.php)
+
+Coossions (stands for cookie-sessions) is a php plugin to store sessions in encrypted cookie
 
 ## Installation via composer
 
@@ -50,3 +54,11 @@ Although, there are already set the best known, at the moment, hash and crypto a
         
         $coossions->startSession();        
 ```
+
+
+## Performance 
+
+Tested the performance of write/read 2 $_SESSION vars (3 symbols long int/string): 
+ 
+- write overage time 6-8 microseconds
+- read overage time 5-7 microseconds 

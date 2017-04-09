@@ -23,6 +23,13 @@ class Encryptor implements EncryptorInterface
         $this->secret = $secret;
     }
 
+    /**
+     * Compares 2 hashes
+     * @param string $digest    Digest to compare with
+     * @param string $message   Original message
+     * @param string $sid       Session id
+     * @return bool
+     */
     private function hashesEqual(string $digest, string $message, string $sid): bool
     {
         return hash_equals(
