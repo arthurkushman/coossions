@@ -1,6 +1,7 @@
 <?php
 namespace coossions\base;
 
+use coossions\crypt\Encryptor;
 use SessionHandlerInterface;
 
 interface BaseInterface extends SessionHandlerInterface
@@ -9,25 +10,8 @@ interface BaseInterface extends SessionHandlerInterface
     const SESSION_PATH = '';
 
     /**
-     * Encrypt a string.
-     *
-     * @param  string $in String to encrypt.
-     * @param  string $key Encryption key.
-     *
-     * @param string $sid
-     * @return string The encrypted string.
+     * Setter for DI via Encryptor ex. if user wants to override params
+     * @param Encryptor $encryptor  Instance of an Encryptor class pre-set with values
      */
-    function encryptString(string $in, string $key, string $sid): string;
-
-    /**
-     * Decrypt a string.
-     *
-     * @param  string $in  String to decrypt.
-     * @param  string $key Decryption key.
-     *
-     * @param string  $sid
-     *
-     * @return string The decrypted string.
-     */
-    function decryptString(string $in, string $key, string $sid): string;
+    public function setEncryption(Encryptor $encryptor);
 }
