@@ -4,8 +4,8 @@ namespace coossions\exceptions;
 
 class AlgoNotFoundException extends \Exception
 {
-    public function __construct($message, $code, \Exception $previous)
+    public function __construct($message)
     {
-        parent::__construct($message, $code, $previous);
+        parent::__construct($message);
     }
 }

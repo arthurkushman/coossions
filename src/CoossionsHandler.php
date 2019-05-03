@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: arthur
- * Date: 05.04.17
- * Time: 20:10
- */
-
 namespace coossions;
 
 use coossions\base\Coossions;
@@ -13,6 +6,14 @@ use coossions\base\CoossionsContractInterface;
 
 class CoossionsHandler extends Coossions implements CoossionsContractInterface
 {
+    /**
+     * Coossions constructor.
+     * @param string $secret the secret key to be used in openssl_digest
+     */
+    public function __construct(string $secret)
+    {
+        parent::__construct($secret);
+    }
 
     /**
      * Starts session with SessionHandlerInterface impl + cookie encryption
@@ -22,8 +23,7 @@ class CoossionsHandler extends Coossions implements CoossionsContractInterface
     public function startSession(bool $start = true)
     {
         session_set_save_handler($this);
-        session_register_shutdown();
-        if(true === $start) {
+        if(true === $start && session_status() === PHP_SESSION_NONE) {
             session_start();
         }
     }
